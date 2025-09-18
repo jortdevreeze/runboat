@@ -79,6 +79,7 @@ class RunboatBuildElement extends LitElement {
                 <button @click="${this.startHandler}" ?disabled="${this.build.status != "stopped" || this.build.status == RunboatBuildElement.clickedStatus}">start</button>
                 <button @click="${this.stopHandler}" ?disabled="${this.build.status != "started" || this.build.status == RunboatBuildElement.clickedStatus}">stop</button>
                 <button @click="${this.resetHandler}" ?disabled="${this.build.status == RunboatBuildElement.clickedStatus}">reset</button>
+                <button @click="${this.deleteHandler}" ?disabled="${this.build.status == RunboatBuildElement.clickedStatus}">delete</button>
             </p>
         </div>
         `;
@@ -94,6 +95,12 @@ class RunboatBuildElement extends LitElement {
 
     resetHandler(e) {
         this.actionHandler("reset");
+    }
+
+    deleteHandler(e) {
+        this.build.status = RunboatBuildElement.clickedStatus;
+        this.requestUpdate();
+        fetch(`/api/v1/builds/${this.build.name}/${action}`, {method: 'DELETE'});
     }
 
     static clickedStatus = "⏳";
