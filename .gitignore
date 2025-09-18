@@ -1,3 +1,5 @@
+docker-compose.yml
+
 tmp/
 src/runboat/kubefiles/kustomization.yaml
 
