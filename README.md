@@ -1,5 +1,8 @@
-# runboat ☸️
+# runboat clone ☸️
 
+This is a cloned version of the original Runboat. I added some improvement in the layout and support for private repositories.
+
+# runboat ☸️
 A simple Odoo runbot lookalike on kubernetes. Main goal is replacing the OCA runbot.
 
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/sbidoul/runboat/main.svg)](https://results.pre-commit.ci/latest/github/sbidoul/runboat/main)
