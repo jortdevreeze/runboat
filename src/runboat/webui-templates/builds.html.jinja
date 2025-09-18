@@ -6,12 +6,32 @@
             body {
                 font-family: Arial, Helvetica, sans-serif;
             }
+            .repo-group {
+                margin-bottom: 1em;
+                border: 1px solid #ddd;
+                border-radius: 0.5em;
+                padding: 0.5em;
+            }
+            .repo-title {
+                font-weight: bold;
+                font-size: 1.1em;
+                margin-bottom: 0.5em;
+                color: #333;
+            }
             .row {
                 display: flex;
                 flex-direction: row;
                 border-style: none none solid none;
                 border-width: thin;
                 border-color: lightgray;
+                margin-bottom: 0.5em;
+            }
+            .branch-title {
+                font-weight: bold;
+                font-size: 0.9em;
+                margin-bottom: 0.25em;
+                color: #666;
+                width: 100%;
             }
             runboat-build {
                 margin: 0.25em;
@@ -47,19 +67,46 @@
                         // update build element
                         buildElement.build = oEvent.build;
                     } else {
-                        var rowId = `branch-${oEvent.build.commit_info.target_branch}`;
+                        const repo = oEvent.build.commit_info.repo;
+                        const branch = oEvent.build.commit_info.target_branch;
+                        
+                        // Get or create repo group
+                        var repoGroupId = `repo-${repo.replace(/[^a-zA-Z0-9]/g, '-')}`;
+                        var repoGroupElement = document.getElementById(repoGroupId);
+                        if (!repoGroupElement) {
+                            repoGroupElement = document.createElement("div");
+                            repoGroupElement.classList.add("repo-group");
+                            repoGroupElement.id = repoGroupId;
+                            
+                            const repoTitle = document.createElement("div");
+                            repoTitle.classList.add("repo-title");
+                            repoTitle.textContent = repo;
+                            repoGroupElement.appendChild(repoTitle);
+                            
+                            const buildsElement = document.getElementById("builds");
+                            buildsElement.insertBefore(repoGroupElement, buildsElement.firstChild);
+                        }
+                        
+                        // Get or create branch row within repo group
+                        var rowId = `${repoGroupId}-branch-${branch.replace(/[^a-zA-Z0-9]/g, '-')}`;
                         if (oEvent.build.commit_info.pr) {
-                            rowId += `-pr-${oEvent.build.commit_info.pr}`
+                            rowId += `-pr-${oEvent.build.commit_info.pr}`;
                         }
                         var rowElement = document.getElementById(rowId);
                         if (!rowElement) {
-                            // create row
+                            // create branch title and row
+                            const branchTitle = document.createElement("div");
+                            branchTitle.classList.add("branch-title");
+                            branchTitle.textContent = `${branch}${oEvent.build.commit_info.pr ? ` (PR #${oEvent.build.commit_info.pr})` : ''}`;
+                            
                             rowElement = document.createElement("div");
                             rowElement.classList.add("row");
                             rowElement.id = rowId;
-                            const buildsElement = document.getElementById("builds");
-                            buildsElement.insertBefore(rowElement, buildsElement.firstChild);
+                            
+                            repoGroupElement.appendChild(branchTitle);
+                            repoGroupElement.appendChild(rowElement);
                         }
+                        
                         // add build element to row
                         buildElement = document.createElement("runboat-build");
                         buildElement.id = oEvent.build.name;
