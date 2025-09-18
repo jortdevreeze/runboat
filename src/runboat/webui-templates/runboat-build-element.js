@@ -20,9 +20,14 @@ class RunboatBuildElement extends LitElement {
     static styles = css`
         .build-card {
             width: 16.5em;
+            height: 8em;
             padding: 0.5em;
             border-radius: 0.5em;
             background-color: lightgray;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
         }
         .build-name {
             font-size: x-small;
@@ -43,6 +48,14 @@ class RunboatBuildElement extends LitElement {
         p {
             margin-top: 0.5em;
             margin-bottom: 0.5em;
+            font-size: small;
+        }
+        .build-info {
+            flex-grow: 1;
+            overflow: hidden;
+        }
+        .build-actions {
+            margin-top: auto;
         }
     `;
 
@@ -52,35 +65,39 @@ class RunboatBuildElement extends LitElement {
         }
         return html`
         <div class="build-card build-status-${this.build.status}">
-            <p class="build-name">${this.build.name}</p>
-            <p>
-                <a href="${this.build.repo_target_branch_link}">${this.build.commit_info?.repo} ${this.build.commit_info?.target_branch}</a>
-                ${this.build.commit_info?.pr?
-                    html`PR <a href="${this.build.repo_pr_link}">${this.build.commit_info?.pr}</a>`:""
-                }
-                ${this.build.commit_info?.git_commit?
-                    html`(<a href="${this.build.repo_commit_link}">${this.build.commit_info?.git_commit.substring(0, 8)}</a>)`:""
-                }
-                <time-ago datetime="${this.build.created}"></time-ago>
-            </p>
-            <p>
-                ${this.build.status || "undeployed"}
-                ${this.build.status?
-                    html`⦙ 🗒 <a href="/api/v1/builds/${this.build.name}/init-log">init log</a>`:""
-                }
-                ${this.build.status == "started"?
-                    html`⦙ 🗒 <a href="/api/v1/builds/${this.build.name}/log">log</a>`:""
-                }
-                ${this.build.status == "started"?
-                   html`⦙ 🚪 <a href="${this.build.deploy_link}" title="Odoo">live</a> <a href="${this.build.deploy_link_mailhog}" title="Mailhog">✉</a>`:""
-                }
-            </p>
-            <p>
-                <button @click="${this.startHandler}" ?disabled="${this.build.status != "stopped" || this.build.status == RunboatBuildElement.clickedStatus}">start</button>
-                <button @click="${this.stopHandler}" ?disabled="${this.build.status != "started" || this.build.status == RunboatBuildElement.clickedStatus}">stop</button>
-                <button @click="${this.resetHandler}" ?disabled="${this.build.status == RunboatBuildElement.clickedStatus}">reset</button>
-                <button @click="${this.deleteHandler}" ?disabled="${this.build.status == RunboatBuildElement.clickedStatus}">delete</button>
-            </p>
+            <div class="build-info">
+                <p class="build-name">${this.build.name}</p>
+                <p>
+                    <a href="${this.build.repo_target_branch_link}">${this.build.commit_info?.repo}/${this.build.commit_info?.target_branch}</a>
+                    ${this.build.commit_info?.pr?
+                        html`PR <a href="${this.build.repo_pr_link}">${this.build.commit_info?.pr}</a>`:""
+                    }
+                    ${this.build.commit_info?.git_commit?
+                        html`(<a href="${this.build.repo_commit_link}">${this.build.commit_info?.git_commit.substring(0, 8)}</a>)`:""
+                    }
+                    <time-ago datetime="${this.build.created}"></time-ago>
+                </p>
+                <p>
+                    ${this.build.status || "undeployed"}
+                    ${this.build.status?
+                        html`⦙ 🗒 <a href="/api/v1/builds/${this.build.name}/init-log">init log</a>`:""
+                    }
+                    ${this.build.status == "started"?
+                        html`⦙ 🗒 <a href="/api/v1/builds/${this.build.name}/log">log</a>`:""
+                    }
+                    ${this.build.status == "started"?
+                       html`⦙ 🚪 <a href="${this.build.deploy_link}" title="Odoo">live</a> ⦙ <a href="${this.build.deploy_link_mailhog}" title="Mailhog">✉</a>`:""
+                    }
+                </p>
+            </div>
+            <div class="build-actions">
+                <p>
+                    <button @click="${this.startHandler}" ?disabled="${this.build.status != "stopped" || this.build.status == RunboatBuildElement.clickedStatus}">start</button>
+                    <button @click="${this.stopHandler}" ?disabled="${this.build.status != "started" || this.build.status == RunboatBuildElement.clickedStatus}">stop</button>
+                    <button @click="${this.resetHandler}" ?disabled="${this.build.status == RunboatBuildElement.clickedStatus}">reset</button>
+                    <button @click="${this.deleteHandler}" ?disabled="${this.build.status == RunboatBuildElement.clickedStatus}">delete</button>
+                </p>
+            </div>
         </div>
         `;
     }
