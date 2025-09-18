@@ -13,7 +13,14 @@ rm -fr $ADDONS_DIR
 # which exceeded the default pod memory limit.
 mkdir -p $ADDONS_DIR
 cd $ADDONS_DIR
-curl -sSL https://github.com/${RUNBOAT_GIT_REPO}/tarball/${RUNBOAT_GIT_REF} | tar zxf - --strip-components=1
+
+curl -sSL \
+  -H "Authorization: Bearer ${RUNBOAT_BUILD_GITHUB_TOKEN}" \
+  https://api.github.com/repos/${RUNBOAT_GIT_REPO}/tarball/${RUNBOAT_GIT_REF} \
+  | tar zxf - --strip-components=1
+  
+
+#curl -sSL https://github.com/${RUNBOAT_GIT_REPO}/tarball/${RUNBOAT_GIT_REF} | tar zxf - --strip-components=1
 
 # Install.
 INSTALL_METHOD=${INSTALL_METHOD:-oca_install_addons}
