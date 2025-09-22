@@ -21,10 +21,14 @@
             .row {
                 display: flex;
                 flex-direction: row;
+                flex-wrap: wrap;
                 border-style: none none solid none;
                 border-width: thin;
                 border-color: lightgray;
                 margin-bottom: 0.5em;
+            }
+            .row:last-child {
+                border-bottom: none;
             }
             .branch-title {
                 font-weight: bold;
