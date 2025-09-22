@@ -1,6 +1,6 @@
 # runboat clone ☸️
 
-This is a cloned version of the original Runboat. I added some improvement in the layout and support for private repositories.
+This is a forked version of the original Runboat. I added some improvement in the layout and support for private repositories.
 
 ![Runboat Clone Screenshot](./docs/runboat_improved_layout.png)
 
