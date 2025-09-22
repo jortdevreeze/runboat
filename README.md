@@ -2,7 +2,8 @@
 
 This is a forked version of the original Runboat. I added some improvement in the layout and support for private repositories.
 
-![Runboat Clone Screenshot](./docs/runboat_improved_layout.png)
+![Runboat Clone Screenshot 1](./docs/runboat_improved_layout.png)
+![Runboat Clone Screenshot 2](./docs/runboat_improved_layout_collapse.png)
 
 This is a screenshot of the Runboat Clone in action. The improved layout and private repository support can be seen in the interface.
 
