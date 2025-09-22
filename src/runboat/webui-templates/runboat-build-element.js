@@ -164,7 +164,7 @@ class RunboatBuildElement extends LitElement {
                         html`⦙ 🗒 <span class="log-link" @click="${this.showLog}">log</span>`:""
                     }
                     ${this.build.status == "started"?
-                       html`⦙ 🚪 <a href="${this.build.deploy_link}" title="Odoo">live</a> ⦙ <a href="${this.build.deploy_link_mailhog}" title="Mailhog">✉</a>`:""
+                       html`⦙ 🚪 <a href="${this.build.deploy_link}" title="Odoo" target="_blank">live</a> ⦙ <a href="${this.build.deploy_link_mailhog}" title="Mailhog" target="_blank">✉</a>`:""
                     }
                 </p>
             </div>
@@ -335,7 +335,7 @@ class RunboatBuildElement extends LitElement {
     deleteHandler(e) {
         this.build.status = RunboatBuildElement.clickedStatus;
         this.requestUpdate();
-        fetch(`/api/v1/builds/${this.build.name}/delete`, {method: 'DELETE'});
+        fetch(`/api/v1/builds/${this.build.name}`, {method: 'DELETE'});
     }
 
     static clickedStatus = "⏳";
