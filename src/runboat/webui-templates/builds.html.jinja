@@ -15,8 +15,33 @@
             .repo-title {
                 font-weight: bold;
                 font-size: 1.1em;
+                margin-top: 0.5em;
                 margin-bottom: 0.5em;
                 color: #333;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                user-select: none;
+            }
+            .repo-collapse-icon {
+                margin-right: 0.5em;
+                transition: transform 0.2s ease;
+                font-size: 0.8em;
+            }
+            .repo-collapse-icon.collapsed {
+                transform: rotate(-90deg);
+            }
+            .repo-content {
+                transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+                overflow: hidden;
+            }
+            .repo-content.collapsed {
+                max-height: 0;
+                opacity: 0;
+            }
+            .repo-content.expanded {
+                max-height: 2000px;
+                opacity: 1;
             }
             .row {
                 display: flex;
@@ -84,14 +109,33 @@
                             
                             const repoTitle = document.createElement("div");
                             repoTitle.classList.add("repo-title");
-                            repoTitle.textContent = repo;
+                            repoTitle.onclick = () => toggleRepoCollapse(repoGroupId);
+                            
+                            const collapseIcon = document.createElement("span");
+                            collapseIcon.classList.add("repo-collapse-icon");
+                            collapseIcon.textContent = "▼";
+                            
+                            const repoText = document.createElement("span");
+                            repoText.textContent = repo;
+                            
+                            repoTitle.appendChild(collapseIcon);
+                            repoTitle.appendChild(repoText);
+                            
+                            const repoContent = document.createElement("div");
+                            repoContent.classList.add("repo-content", "expanded");
+                            repoContent.id = `${repoGroupId}-content`;
+                            
                             repoGroupElement.appendChild(repoTitle);
+                            repoGroupElement.appendChild(repoContent);
                             
                             const buildsElement = document.getElementById("builds");
                             buildsElement.insertBefore(repoGroupElement, buildsElement.firstChild);
                         }
                         
-                        // Get or create branch row within repo group
+                        // Get repo content container (changed from repoGroupElement)
+                        const repoContent = document.getElementById(`${repoGroupId}-content`);
+                        
+                        // Get or create branch row within repo content (changed parent)
                         var rowId = `${repoGroupId}-branch-${branch.replace(/[^a-zA-Z0-9]/g, '-')}`;
                         if (oEvent.build.commit_info.pr) {
                             rowId += `-pr-${oEvent.build.commit_info.pr}`;
@@ -107,8 +151,8 @@
                             rowElement.classList.add("row");
                             rowElement.id = rowId;
                             
-                            repoGroupElement.appendChild(branchTitle);
-                            repoGroupElement.appendChild(rowElement);
+                            repoContent.appendChild(branchTitle);
+                            repoContent.appendChild(rowElement);
                         }
                         
                         // add build element to row
@@ -121,6 +165,23 @@
                     if (buildElement) {
                         buildElement.remove();
                     }
+                }
+            }
+
+            function toggleRepoCollapse(repoGroupId) {
+                const repoContent = document.getElementById(`${repoGroupId}-content`);
+                const collapseIcon = document.querySelector(`#${repoGroupId} .repo-collapse-icon`);
+                
+                if (repoContent.classList.contains('collapsed')) {
+                    // Expand
+                    repoContent.classList.remove('collapsed');
+                    repoContent.classList.add('expanded');
+                    collapseIcon.classList.remove('collapsed');
+                } else {
+                    // Collapse
+                    repoContent.classList.remove('expanded');
+                    repoContent.classList.add('collapsed');
+                    collapseIcon.classList.add('collapsed');
                 }
             }
 
