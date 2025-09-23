@@ -1,16 +1,78 @@
 # runboat clone ☸️
 
-This is a forked version of the original Runboat. I added some improvement in the layout and support for private repositories.
+This is an enhanced fork of the [original Runboat](https://github.com/sbidoul/runboat) by Stéphane Bidoul. This version includes significant UI/UX improvements and additional features while maintaining full compatibility with the original Runboat functionality.
 
 ![Runboat Clone Screenshot 1](./docs/runboat_improved_layout.png)
 ![Runboat Clone Screenshot 2](./docs/runboat_improved_layout_collapse.png)
 
-This is a screenshot of the Runboat Clone in action. The improved layout and private repository support can be seen in the interface.
+## Additional Features in This Fork
+
+### Enhanced User Interface
+- **Repository Grouping**: Build cards are now organized by repository first, then by branch, providing better visual organization
+- **Collapsible Repository Groups**: Click on repository titles to expand/collapse branches for better navigation
+- **Responsive Layout**: Build cards automatically wrap to new lines on smaller screens
+- **Uniform Card Heights**: All build cards maintain consistent height regardless of content
+- **Visual Polish**: Improved styling with better spacing, borders, and hover effects
+
+### Enhanced Log Viewing
+- **Modal Log Viewer**: Both init logs and runtime logs open in large, scrollable modals instead of new pages
+- **Auto-Refreshing Logs**: Logs automatically update every 5 seconds when viewing active builds
+- **Pause/Resume Controls**: Pause and resume log auto-refresh with dedicated controls in the modal header
+- **Auto-Scroll**: Logs automatically scroll to show the latest entries
+- **ANSI Color Support**: Preserves log formatting and colors from the original log output
+
+### Build Management
+- **Branch Refresh Controls**: One-click refresh buttons (🔄) next to each branch name to trigger new builds
+- **Visual Feedback**: Spinning animations and hover effects provide clear user feedback
+- **Improved Action Buttons**: Better button states and visual indicators for build actions
+
+### Technical Improvements
+- **Better Error Handling**: Enhanced error messages and loading states
+- **Cache Busting**: Prevents stale log content with proper cache control
+- **Memory Management**: Proper cleanup of intervals and event listeners
+- **Accessibility**: Better keyboard navigation and screen reader support
 
 # runboat ☸️
 A simple Odoo runbot lookalike on kubernetes. Main goal is replacing the OCA runbot.
 
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/sbidoul/runboat/main.svg)](https://results.pre-commit.ci/latest/github/sbidoul/runboat/main)
+
+## What is Runboat?
+
+Runboat is a Kubernetes-based continuous integration system specifically designed for Odoo addon development. It automatically creates isolated, fully-functional Odoo instances for every branch and pull request in your GitHub repositories.
+
+### How Runboat Works
+
+1. **GitHub Integration**: Runboat monitors your GitHub repositories via webhooks. When you push to a branch or create a pull request, it automatically triggers a new "build"
+
+2. **Automated Deployment**: Each build gets its own:
+   - Kubernetes deployment with dedicated resources
+   - PostgreSQL database 
+   - Persistent storage for filestore
+   - Unique subdomain (e.g., `my-feature-branch.runboat.mydomain.com`)
+
+3. **Odoo Installation**: Runboat automatically:
+   - Clones your repository at the specific commit
+   - Installs Python dependencies
+   - Creates and initializes the Odoo database
+   - Installs your custom addons
+   - Configures the instance for immediate use
+
+4. **Lifecycle Management**: Builds can be:
+   - **Started/Stopped**: Control resource usage by starting only when needed
+   - **Reset**: Rebuild from scratch if something goes wrong
+   - **Deleted**: Clean up resources when no longer needed
+
+5. **Resource Efficiency**: 
+   - Builds consume no resources when stopped (0 replicas)
+   - Database and filestore are preserved for instant restarts
+   - Automatic cleanup of old builds to manage resource usage
+
+This makes Runboat perfect for:
+- **QA Testing**: Every feature branch gets its own testable instance
+- **Client Demos**: Share working instances with stakeholders
+- **Development**: Test addon compatibility across different branches
+- **Code Review**: Reviewers can test PRs in live environments
 
 ## Principle of operation
 
