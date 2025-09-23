@@ -6,7 +6,9 @@ class RunboatBuildElement extends LitElement {
         return {
             build: {},
             showLogModal: { type: Boolean },
-            showInitLogModal: { type: Boolean }
+            showInitLogModal: { type: Boolean },
+            logRefreshPaused: { type: Boolean },
+            initLogRefreshPaused: { type: Boolean }
         }
     }
 
@@ -17,6 +19,8 @@ class RunboatBuildElement extends LitElement {
         this.showInitLogModal = false;
         this.logRefreshInterval = null;
         this.initLogRefreshInterval = null;
+        this.logRefreshPaused = false;
+        this.initLogRefreshPaused = false;
     }
 
     undeployed() {
@@ -106,6 +110,36 @@ class RunboatBuildElement extends LitElement {
             font-weight: bold;
             font-size: 1.2em;
         }
+        .modal-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+        }
+        .pause-play-btn {
+            background: none;
+            border: 1px solid #007bff;
+            border-radius: 0.25em;
+            color: #007bff;
+            cursor: pointer;
+            padding: 0.25em 0.5em;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 0.25em;
+        }
+        .pause-play-btn:hover {
+            background-color: #007bff;
+            color: white;
+        }
+        .pause-play-btn.paused {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #212529;
+        }
+        .pause-play-btn.paused:hover {
+            background-color: #e0a800;
+            border-color: #e0a800;
+        }
         .modal-close {
             background: none;
             border: none;
@@ -183,7 +217,14 @@ class RunboatBuildElement extends LitElement {
                 <div class="modal-content" @click="${this.stopPropagation}">
                     <div class="modal-header">
                         <div class="modal-title">Build Log - ${this.build.name}</div>
-                        <button class="modal-close" @click="${this.closeModal}">&times;</button>
+                        <div class="modal-controls">
+                            <button class="pause-play-btn ${this.logRefreshPaused ? 'paused' : ''}" 
+                                    @click="${this.toggleLogRefresh}"
+                                    title="${this.logRefreshPaused ? 'Resume auto-refresh' : 'Pause auto-refresh'}">
+                                ${this.logRefreshPaused ? '▶️ Resume' : '⏸️ Pause'}
+                            </button>
+                            <button class="modal-close" @click="${this.closeModal}">&times;</button>
+                        </div>
                     </div>
                     <div class="modal-body">
                         <div id="log-content" class="log-content">
@@ -199,7 +240,14 @@ class RunboatBuildElement extends LitElement {
                 <div class="modal-content" @click="${this.stopPropagation}">
                     <div class="modal-header">
                         <div class="modal-title">Init Log - ${this.build.name}</div>
-                        <button class="modal-close" @click="${this.closeInitLogModal}">&times;</button>
+                        <div class="modal-controls">
+                            <button class="pause-play-btn ${this.initLogRefreshPaused ? 'paused' : ''}" 
+                                    @click="${this.toggleInitLogRefresh}"
+                                    title="${this.initLogRefreshPaused ? 'Resume auto-refresh' : 'Pause auto-refresh'}">
+                                ${this.initLogRefreshPaused ? '▶️ Resume' : '⏸️ Pause'}
+                            </button>
+                            <button class="modal-close" @click="${this.closeInitLogModal}">&times;</button>
+                        </div>
                     </div>
                     <div class="modal-body">
                         <div id="init-log-content" class="log-content">
@@ -215,35 +263,66 @@ class RunboatBuildElement extends LitElement {
     showLog(e) {
         e.preventDefault();
         this.showLogModal = true;
+        this.logRefreshPaused = false;
         this.requestUpdate();
         
         // Fetch log content after modal is rendered
         this.updateComplete.then(() => {
             this.fetchLogContent();
             // Start auto-refresh every 5 seconds
-            this.logRefreshInterval = setInterval(() => {
-                this.fetchLogContent();
-            }, 5000);
+            this.startLogRefresh();
         });
     }
 
     showInitLog(e) {
         e.preventDefault();
         this.showInitLogModal = true;
+        this.initLogRefreshPaused = false;
         this.requestUpdate();
         
         // Fetch init log content after modal is rendered
         this.updateComplete.then(() => {
             this.fetchInitLogContent();
             // Start auto-refresh every 5 seconds
-            this.initLogRefreshInterval = setInterval(() => {
-                this.fetchInitLogContent();
-            }, 5000);
+            this.startInitLogRefresh();
         });
+    }
+
+    startLogRefresh() {
+        if (this.logRefreshInterval) {
+            clearInterval(this.logRefreshInterval);
+        }
+        this.logRefreshInterval = setInterval(() => {
+            if (!this.logRefreshPaused) {
+                this.fetchLogContent();
+            }
+        }, 5000);
+    }
+
+    startInitLogRefresh() {
+        if (this.initLogRefreshInterval) {
+            clearInterval(this.initLogRefreshInterval);
+        }
+        this.initLogRefreshInterval = setInterval(() => {
+            if (!this.initLogRefreshPaused) {
+                this.fetchInitLogContent();
+            }
+        }, 5000);
+    }
+
+    toggleLogRefresh() {
+        this.logRefreshPaused = !this.logRefreshPaused;
+        this.requestUpdate();
+    }
+
+    toggleInitLogRefresh() {
+        this.initLogRefreshPaused = !this.initLogRefreshPaused;
+        this.requestUpdate();
     }
 
     closeModal() {
         this.showLogModal = false;
+        this.logRefreshPaused = false;
         // Clear the refresh interval when modal is closed
         if (this.logRefreshInterval) {
             clearInterval(this.logRefreshInterval);
@@ -254,6 +333,7 @@ class RunboatBuildElement extends LitElement {
 
     closeInitLogModal() {
         this.showInitLogModal = false;
+        this.initLogRefreshPaused = false;
         // Clear the refresh interval when modal is closed
         if (this.initLogRefreshInterval) {
             clearInterval(this.initLogRefreshInterval);
