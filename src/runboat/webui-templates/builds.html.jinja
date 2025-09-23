@@ -15,7 +15,6 @@
             .repo-title {
                 font-weight: bold;
                 font-size: 1.1em;
-                margin-top: 0.5em;
                 margin-bottom: 0.5em;
                 color: #333;
                 cursor: pointer;
@@ -61,6 +60,27 @@
                 margin-bottom: 0.25em;
                 color: #666;
                 width: 100%;
+                display: flex;
+                align-items: center;
+            }
+            .refresh-icon {
+                margin-right: 0.5em;
+                cursor: pointer;
+                font-size: 0.9em;
+                color: #000000;
+                user-select: none;
+                transition: transform 0.2s ease;
+            }
+            .refresh-icon:hover {
+                color: #000000;
+                transform: rotate(180deg);
+            }
+            .refresh-icon.spinning {
+                animation: spin 1s linear infinite;
+            }
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
             }
             runboat-build {
                 margin: 0.25em;
@@ -132,10 +152,10 @@
                             buildsElement.insertBefore(repoGroupElement, buildsElement.firstChild);
                         }
                         
-                        // Get repo content container (changed from repoGroupElement)
+                        // Get repo content container
                         const repoContent = document.getElementById(`${repoGroupId}-content`);
                         
-                        // Get or create branch row within repo content (changed parent)
+                        // Get or create branch row within repo content
                         var rowId = `${repoGroupId}-branch-${branch.replace(/[^a-zA-Z0-9]/g, '-')}`;
                         if (oEvent.build.commit_info.pr) {
                             rowId += `-pr-${oEvent.build.commit_info.pr}`;
@@ -145,7 +165,23 @@
                             // create branch title and row
                             const branchTitle = document.createElement("div");
                             branchTitle.classList.add("branch-title");
-                            branchTitle.textContent = `${branch}${oEvent.build.commit_info.pr ? ` (PR #${oEvent.build.commit_info.pr})` : ''}`;
+                            
+                            // Add refresh icon for branches (not PRs)
+                            if (!oEvent.build.commit_info.pr) {
+                                const refreshIcon = document.createElement("span");
+                                refreshIcon.classList.add("refresh-icon");
+                                refreshIcon.textContent = "↻";
+                                refreshIcon.title = `Refresh ${branch} branch`;
+                                refreshIcon.onclick = (e) => {
+                                    e.stopPropagation();
+                                    triggerBranchRefresh(repo, branch, refreshIcon);
+                                };
+                                branchTitle.appendChild(refreshIcon);
+                            }
+                            
+                            const branchText = document.createElement("span");
+                            branchText.textContent = `${branch}${oEvent.build.commit_info.pr ? ` (PR #${oEvent.build.commit_info.pr})` : ''}`;
+                            branchTitle.appendChild(branchText);
                             
                             rowElement = document.createElement("div");
                             rowElement.classList.add("row");
@@ -182,6 +218,49 @@
                     repoContent.classList.remove('expanded');
                     repoContent.classList.add('collapsed');
                     collapseIcon.classList.add('collapsed');
+                }
+            }
+
+            async function triggerBranchRefresh(repo, branch, refreshIcon) {
+                try {
+                    // Add spinning animation
+                    refreshIcon.classList.add('spinning');
+                    
+                    // Try with query parameters first
+                    const url = `/api/v1/builds/trigger/branch?repo=${encodeURIComponent(repo)}&branch=${encodeURIComponent(branch)}`;
+                    const response = await fetch(url, {
+                        method: 'POST'
+                    });
+                    
+                    if (response.ok) {
+                        console.log(`Successfully triggered refresh for ${repo}/${branch}`);
+                    } else {
+                        console.error(`Failed to trigger refresh: ${response.status} ${response.statusText}`);
+                        // Try with JSON body as fallback
+                        const jsonResponse = await fetch('/api/v1/builds/trigger/branch', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                repo: repo,
+                                branch: branch
+                            })
+                        });
+                        
+                        if (jsonResponse.ok) {
+                            console.log(`Successfully triggered refresh for ${repo}/${branch} (JSON format)`);
+                        } else {
+                            console.error(`Failed with JSON too: ${jsonResponse.status} ${jsonResponse.statusText}`);
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Error triggering refresh:`, error);
+                } finally {
+                    // Remove spinning animation after 2 seconds
+                    setTimeout(() => {
+                        refreshIcon.classList.remove('spinning');
+                    }, 2000);
                 }
             }
 
